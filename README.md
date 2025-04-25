@@ -1,31 +1,30 @@
 ## terraform-aws-github-oidc
 
-This Terraform module creates a trust relationship via OpenID Connect (OIDC) between GitHub and Amazon Web Services (AWS). Allowing services like GitHub 
+This Terraform module creates a trust relationship via OpenID Connect (OIDC) between multiple GitHub organizations and Amazon Web Services (AWS). Allowing services like GitHub 
 Actions to send images to the ECR without the need to use Accesskeys and Secretkeys, using Role.
 
 
 ## Usage
 
-Allowing all repository for an organization
+Allowing all repositories for multiple organizations
 ```
 module "github-oidc" {
     source = "git@github.com:cloudscript-technology/terraform-aws-github-oidc?ref=v1.0"
     
-    organization = "ORGANIZATIONNAME"    
+    organizations = ["ORG-1", "ORG-2"]
 }
 ```
-Allowing single repository from an organization
+Allowing single repository from multiple organizations
 ```
 module "github-oidc" {
     source = "git@github.com:cloudscript-technology/terraform-aws-github-oidc?ref=v1.0"
     
-    organization = "ORGANIZATION-NAME"
-    repo_name    = "REPO-NAME"
+    organizations = ["ORG-1", "ORG-2"]
+    repo_name     = "REPO-NAME"
 }
 ```
 
-We have a condition in the code where if the value of repo_name is 
-null the logic allows all repositories in the organization.
+If `repo_name` is not set, the module allows all repositories for the organizations listed in `organizations`.
 
 ___
 
@@ -38,8 +37,6 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
 ```
 
 
-___
-**In the near future we can create logic to interpret a list of repositories.**
 ___
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -75,7 +72,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_policy_documents"></a> [additional\_policy\_documents](#input\_additional\_policy\_documents) | List of JSON IAM policy documents | `list(string)` | `[]` | no |
-| <a name="input_organization"></a> [organization](#input\_organization) | Name of the Github Organization. | `string` | n/a | yes |
+| <a name="input_organizations"></a> [organizations](#input_organizations) | List of GitHub Organizations. | `list(string)` | n/a | yes |
 | <a name="input_repo_name"></a> [repo\_name](#input\_repo\_name) | Name of the Github Repository. | `string` | `""` | no |
 
 ## Outputs
