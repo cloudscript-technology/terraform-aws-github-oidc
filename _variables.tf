@@ -1,6 +1,6 @@
-variable "organization" {
-  description = "Name of the Github Organization."
-  type        = string
+variable "organizations" {
+  type        = list(string)
+  description = "List of GitHub organizations."
 }
 
 variable "repo_name" {

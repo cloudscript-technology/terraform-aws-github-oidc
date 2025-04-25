@@ -8,7 +8,11 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = var.repo_name != "" ? ["repo:${var.organization}/${var.repo_name}:*"] : ["repo:${var.organization}/*"]
+      values   = var.repo_name != "" ? [
+        for org in var.organizations : "repo:${org}/${var.repo_name}:*"
+      ] : [
+        for org in var.organizations : "repo:${org}/*"
+      ]
     }
   }
 }
