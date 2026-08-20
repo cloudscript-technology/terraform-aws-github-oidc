@@ -1,0 +1,26 @@
+# Terraform / OpenTofu
+.terraform/
+.terragrunt-cache/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Lock file: this is a reusable module, not a root module — the lock belongs to
+# whoever consumes it.
+.terraform.lock.hcl
+
+# Nunca versionar valores de variaveis: podem carregar dado sensivel.
+*.tfvars
+*.tfvars.json
+.env
+.env.*
+
+# Editor / OS  (.vscode/settings.json e versionado de proposito neste repo)
+.idea/
+.DS_Store

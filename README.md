@@ -26,13 +26,48 @@ module "github-oidc" {
 
 If `repo_name` is not set, the module allows all repositories for the organizations listed in `organizations`.
 
+### Immutable subject claims
+
+GitHub emits the OIDC subject claim in two shapes:
+
+```
+legacy      repo:<org>/<repo>:<context>
+immutable   repo:<org>@<owner_id>/<repo>@<repo_id>:<context>
+```
+
+Repositories created after the immutable OIDC identifiers rollout send the
+second shape. A trust policy that only matches the legacy shape rejects them
+with `Not authorized to perform sts:AssumeRoleWithWebIdentity`, even though the
+role, the provider and the policies are all correct. This module always allows
+both shapes.
+
+Pass the numeric owner ID of each organization so that the immutable pattern is
+pinned instead of wildcarded:
+
+```
+module "github-oidc" {
+    source = "git@github.com:cloudscript-technology/terraform-aws-github-oidc?ref=v2.1.0"
+
+    organizations    = ["ORG-1", "ORG-2"]
+    organization_ids = { "ORG-1" = "186337703" }
+}
+```
+
+Get the ID with `gh api orgs/<org> --jq .id`. Organizations left out of the map
+get a wildcard in the owner ID position, which still works — it just trusts any
+owner ID behind the organization name.
+
+Note that the `@` separator is always required in the immutable pattern. Writing
+the condition as `repo:<org>*` would also match an unrelated organization whose
+name merely starts with yours, which anyone can create.
+
 ___
 
 **__data.tf_**
 ```
 data "aws_iam_policy_document" "github_actions_assume_role" {
     ...
-    values   = var.repo_name != ""  ? ["repo:${var.organization}/${var.repo_name}:*"] : ["repo:${var.organization}/*"]
+    values   = local.subject_claims   # legacy + immutable shapes, per organization
     ...
 ```
 
@@ -72,6 +107,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_policy_documents"></a> [additional\_policy\_documents](#input\_additional\_policy\_documents) | List of JSON IAM policy documents | `list(string)` | `[]` | no |
+| <a name="input_organization_ids"></a> [organization\_ids](#input\_organization\_ids) | Numeric GitHub owner (organization) IDs, keyed by organization name, used to build the immutable subject claim. | `map(string)` | `{}` | no |
 | <a name="input_organizations"></a> [organizations](#input_organizations) | List of GitHub Organizations. | `list(string)` | n/a | yes |
 | <a name="input_repo_name"></a> [repo\_name](#input\_repo\_name) | Name of the Github Repository. | `string` | `""` | no |
 
